@@ -106,9 +106,21 @@ ggplot(data = Whickham, aes(x = age)) +
 5.  Create a visualization depicting the relationship between smoking status and health outcome. Briefly describe the relationship, and evaluate whether this meets your expectations. Additionally, calculate the relevant conditional probabilities to help your narrative. Here is some code to get you started:
 
 ```{r}
-Whickham %>%
-  count(smoker, outcome)
+
+ggplot(data = Whickham, aes(y = outcome, fill = smoker)) +
+  geom_bar(position = "fill") +
+  ggtitle("Distribution of Health Outcome and Smoker Status")
+
 ```
+
+```{r}
+Whickham %>%
+  count(smoker, outcome) %>%
+  group_by(smoker) %>%
+  mutate(prop.dead = n/sum(n))
+```
+
+***The relationship does not appear to match what I expected to happen. It appears that those who smoked had a higher probability of being alive 20 years later.***
 
 6.  Create a new variable called `age_cat` using the following scheme:
 
@@ -116,11 +128,34 @@ Whickham %>%
 -   `age > 44 & age <= 64 ~ "45-64"`
 -   `age > 64 ~ "65+"`
 
+```{r}
+
+Whickham = Whickham %>%
+  mutate(age_cat = cut(age,
+                       breaks = c(0, 44, 64, 85),
+                       labels = c("18-44", "45-64", "65+")))
+
+```
+
 7.  Re-create the visualization depicting the relationship between smoking status and health outcome, faceted by `age_cat`. What changed? What might explain this change? Extend the contingency table from earlier by breaking it down by age category and use it to help your narrative.
 
-```{r eval=FALSE}
+```{r}
+
+ggplot(data = Whickham, aes(y = outcome, fill = smoker)) +
+  geom_bar(position = "fill") +
+  facet_wrap(~age_cat) +
+  ggtitle("Distribution of Health Outcome and Smoker Status") +
+  labs(subtitle = "Faceted by Age")
+
+```
+
+***In the plot, it appears that smokers have a higher probability of being dead in 20 yrs than non-smokers across each age category. When the data is not broken up by age, it appears that there are more smokers alive than non-smokers. However, breaking the plot down by age category changes the appearance of of the relationship and reveals the hidden trend. ***
+
+```{r eval=TRUE}
 Whickham %>%
-  count(smoker, age_cat, outcome)
+  count(smoker, age_cat, outcome) %>%
+  group_by(smoker, age_cat) %>%
+  mutate(prop.dead = n/sum(n))
 ```
 
 🧶 ✅ ⬆️ Knit, *commit, and push your changes to GitHub with an appropriate commit message. Make sure to commit and push all changed files so that your Git pane is cleared up afterwards and review the md document on GitHub to make sure you're happy with the final state of your work.*
